@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+const config = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -11,7 +11,12 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        besley: ['var(--font-besley)'],
+      },
     },
   },
   plugins: [],
 };
+
+export default config;
