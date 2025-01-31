@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .flex-middle {
+    @apply flex items-center justify-center
+  }
+
+  .icon-hover {
+    @apply cursor-pointer text-black hover:text-green-500 transition-colors duration-200
+  }
+}
+
 :root {
   height: 100%;
   

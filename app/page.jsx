@@ -2,16 +2,15 @@
 import Chat from "@/components/pages/Chat";
 import LandingPage from "@/components/pages/LandingPage";
 import { useRef } from "react";
-import { io } from "socket.io-client";
-const socket = io("http://localhost:3002");
+import { useSocket } from "@/hooks/useSocket";
 
 const Home = () => {
-
-  const user = useRef(null)
+  const user = useRef(null);
+  const socket = useSocket();
 
   return (
     // <LandingPage socket={socket} user={user}/>
-    <Chat />
+    <Chat socket={socket} user={user}/>
   );
 };
 
