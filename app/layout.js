@@ -1,10 +1,10 @@
 import "./globals.css";
 import { Besley } from "next/font/google";
 
-const besley = Besley({ 
+const besley = Besley({
   subsets: ["latin"],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-besley',
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-besley",
 });
 
 export const metadata = {
