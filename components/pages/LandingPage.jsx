@@ -4,24 +4,46 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateRoom, JoinRoom } from "@/components/status";
 import SplashButton from "@/components/ui/SplashButton";
-
-const LandingPage = ({socket, user}) => {
+import BarLoader from "../ui/BarLoader";
+const LandingPage = ({
+  socket,
+  setUser,
+  roomID,
+  groupName,
+  setRoomID,
+  setGroupName,
+  roomLoading,
+  setRoomLoading,
+}) => {
   const [username, setUsername] = useState("");
-  const [roomID, setRoomID] = useState("");
-  const [groupName, setGroupName] = useState("");
   const [activeTab, setActiveTab] = useState("create");
 
   const clickHandler = () => {
-    if (activeTab === "create") {
-        user.current = {name : username, id : socket.id}
-      socket.emit("create-user", {name : username, roomID, groupName})
-      setUsername("")
-    } else {
-        socket.emit("create-user", {name : username, roomID})
+    console.log("Current socket:", socket);
+    setRoomLoading(true);
+    setUser({ name: username });
+    if (socket && socket.connected) {
+      console.log("Socket is connected with ID:", socket.id);
+      if (activeTab == "create") {
+        socket.emit("userCreated", {
+          user: { name: username },
+          roomID,
+          groupName,
+        });
+        console.log("User Created Event emitted");
+      } else {
+        socket.emit("userJoined", {
+          user: { name: username },
+          roomID,
+        });
+        console.log("User Created Event emitted");
+      }
     }
   };
 
-  return (
+  return roomLoading ? (
+    <BarLoader />
+  ) : (
     <div className="bg-gradient-to-b from-[#1A659E] to-[#103959] min-h-screen flex flex-col justify-center items-center">
       <div className="flex flex-row items-center justify-center gap-5 pt-10 pb-5">
         <Image

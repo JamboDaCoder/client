@@ -4,20 +4,22 @@ import { IoSend } from "react-icons/io5";
 import { ImAttachment } from "react-icons/im";
 import ChatBubble from "../ui/ChatBubble";
 import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
-const Chat = ({
-  groupName = "[Group Name]",
-  roomID = "1234",
-  socket,
-  user,
-}) => {
+const Chat = ({ groupName = "[Group Name]", roomID = "1234", socket, chats, user }) => {
   const [message, setMessage] = useState("");
 
   const sendMessage = () => {
-    console.log("Ran send message function from client");
-    console.log(message)
-    socket.emit("sending_message", { theMessage: message });
-    setMessage("");
+    if (socket && message.trim()) { 
+      socket.emit("sending_message", { 
+        message, 
+        id: Math.floor(Math.random() * 1000000), 
+        owner: user.name,
+        roomID
+      });
+      console.log(`Message sent to room: ${roomID}`);
+      setMessage("");
+    }
   };
 
   return (
@@ -40,20 +42,20 @@ const Chat = ({
         </div>
       </div>
       <div className="w-full flex-[8] bg-green-500">
-        <ChatBubble />
-        <ChatBubble />
-        <ChatBubble />
+        {chats.map((chat) => (
+          <ChatBubble key={chat.id} text={chat.message} owner={chat.name} user={user} />
+        ))}
       </div>
       <div className="w-full flex-[1] bg-[#EFEFD0] flex">
         <div className="flex-[6] flex-middle">
-          <input
-            type="text"
-            placeholder="  Type here"
-            className="scale-[2] rounded-sm w-[40%] h-[25%] bg-[#505050] opacity-50 text-white py-5 px-2.5"
-            onChange={(e) => setMessage(e.target.value)}
+          <Textarea
+            placeholder="  Type here..."
+            className="w-[90%] bg-[#505050] text-white font placeholder:text-white"
+            onChangeHandler={setMessage}
+            message={message}
           />
         </div>
-        <div className="flex-[4] flex-middle flex-row  ">
+        <div className="flex-[4] flex-middle flex-row">
           <div className="flex-[1] flex-middle">
             <IoSend
               size={50}
