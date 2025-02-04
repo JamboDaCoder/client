@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 export const useSocket = (setGroupName, setRoomID, setChats, setRoomLoading) => {
   const [socket, setSocket] = useState(null);
   const socketInitialized = useRef(false);
+  const socketInstance = useRef(null);
 
   useEffect(() => {
     if (!socketInitialized.current) {
@@ -12,9 +13,12 @@ export const useSocket = (setGroupName, setRoomID, setChats, setRoomLoading) => 
       const newSocket = io("http://localhost:4412", {
         transports: ['websocket'],
         autoConnect: true,
-        reconnection: true
+        reconnection: true,
+        reconnectionAttempts: 5
       });
       
+      socketInstance.current = newSocket;
+
       newSocket.on("connect", () => {
         console.log("Socket connected!", newSocket.id);
         setSocket(newSocket);
@@ -26,39 +30,47 @@ export const useSocket = (setGroupName, setRoomID, setChats, setRoomLoading) => 
 
       newSocket.on("disconnect", (reason) => {
         console.log("Socket disconnected:", reason);
+        // Don't set socket to null on normal disconnects
+        if (reason === "io server disconnect") {
+          setSocket(null);
+        }
       });
 
       newSocket.on("initial_data", (data) => {
         if (data) {
-          console.log(data)
-          setChats(data.chats)
-          setGroupName(data.groupName)
-          setRoomID(data.roomID)
-          setRoomLoading(false)
-          console.log("Room data updated on client")
+          console.log("Received initial data:", data);
+          setChats(data.chats || []);
+          setGroupName(data.groupName);
+          setRoomID(data.roomID);
+          setRoomLoading(false);
+          console.log("Room data updated on client");
         } else {
-          console.log("Messsage data dosen't exist")
+          console.log("Message data doesn't exist");
         }
-      })
+      });
 
       newSocket.on("chat_updated", (data) => {
-        console.log("Chat update event called")
-        setChats(data.chats)
-      })
+        console.log("Chat update received:", data);
+        if (data && data.chats) {
+          setChats(data.chats);
+        }
+      });
 
       socketInitialized.current = true;
     }
 
-    // Cleanup function to disconnect socket when component unmounts
+    // Only clean up when component actually unmounts
     return () => {
-      if (socket) {
-        console.log("Cleaning up socket connection");
-        socket.disconnect();
-        setSocket(null);
+      const currentSocket = socketInstance.current;
+      if (currentSocket) {
+        console.log("Component unmounting, cleaning up socket");
+        currentSocket.disconnect();
+        socketInstance.current = null;
         socketInitialized.current = false;
+        setSocket(null);
       }
     };
-  }, []);
+  }, [setChats, setGroupName, setRoomID, setRoomLoading]); // Add proper dependencies
 
   return socket;
 };
