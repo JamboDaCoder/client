@@ -14,7 +14,12 @@ export const useSocket = (setGroupName, setRoomID, setChats, setRoomLoading) => 
         transports: ['websocket'],
         autoConnect: true,
         reconnection: true,
-        reconnectionAttempts: 5
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        forceNew: false,
+        maxHttpBufferSize: 5e6
       });
       
       socketInstance.current = newSocket;
@@ -55,6 +60,26 @@ export const useSocket = (setGroupName, setRoomID, setChats, setRoomLoading) => 
           setChats(data.chats);
         }
       });
+
+      newSocket.on("message_received", (data) => {
+        console.log("Message received:", data);
+        if (data) {
+          setChats(prev => [...prev, {
+            message: data.message,
+            id: data.id,
+            owner: data.owner,
+            type: data.type
+          }]);
+        }
+      });
+
+      newSocket.on("image_received", (data) => {
+        if (data) {
+          console.log("Received initial data:", data);
+        } else {
+          console.log("No data exists")
+        }
+      })
 
       socketInitialized.current = true;
     }
